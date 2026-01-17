@@ -52,8 +52,8 @@
                 <span id="cuenta-carrito" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-green-600">0</span>
             </div>
             <div class="text-left">
-                <p class="text-[10px] uppercase font-black leading-none opacity-80">Total: <span id="monto-total-flotante">0</span></p>
-                <p class="font-bold text-lg leading-tight">Pedir por WhatsApp</p>
+                <p class="text-[10px] uppercase font-black leading-none opacity-80">Subtotal: <span id="monto-total-flotante">0.00</span></p>
+                <p class="font-bold text-lg leading-tight text-white">Pedir por WhatsApp</p>
             </div>
         </button>
     </div>
@@ -83,7 +83,7 @@
 
                 dibujarProductos(productosBase);
             } catch (error) {
-                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error de conexión.</p>";
+                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error de conexión con el catálogo.</p>";
             }
         }
 
@@ -112,9 +112,9 @@
         }
 
         function agregarAlCarrito(nombre, precio) {
-            // Convertimos el precio a número para poder sumar
+            // Limpia el precio para que sea un número sumable (quita $, espacios, etc)
             const valorNumerico = parseFloat(precio.replace(/[^0-9,.]/g, '').replace(',', '.'));
-            carrito.push({ nombre, precio, valor: valorNumerico });
+            carrito.push({ nombre, valor: valorNumerico });
             mostrarNotificacion(`✅ ${nombre} añadido`);
             actualizarInterfazCarrito();
         }
@@ -129,28 +129,32 @@
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
                 cuenta.innerText = carrito.length;
-                montoFlotante.innerText = total.toLocaleString('es-VE', { minimumFractionDigits: 2 }) + "$"; 
+                montoFlotante.innerText = total.toFixed(2); 
             }
         }
 
         function enviarPedido() {
-            let mensaje = "¡Hola @Jauja delicateses! 👋\n\nEste es mi pedido:\n\n";
+            let mensaje = "Hola @Jauja delicateses, este es mi pedido:\n\n";
             const resumen = {};
             let totalPedido = 0;
 
+            // Agrupamos para calcular filas detalladas
             carrito.forEach(item => {
-                resumen[item.nombre] = (resumen[item.nombre] || { cant: 0, valor: item.valor });
+                if (!resumen[item.nombre]) {
+                    resumen[item.nombre] = { cant: 0, valorUnitario: item.valor };
+                }
                 resumen[item.nombre].cant++;
                 totalPedido += item.valor;
             });
 
-            for (const [prod, info] of Object.entries(resumen)) {
-                mensaje += `🔸 *${info.cant}x* ${prod}\n`;
+            // Generar renglones: 2 hallacas 6.00 = 12.00
+            for (const [nombre, info] of Object.entries(resumen)) {
+                const subtotal = info.cant * info.valorUnitario;
+                mensaje += `${info.cant} ${nombre}  ${info.valorUnitario.toFixed(2)} = ${subtotal.toFixed(2)}\n`;
             }
 
-            mensaje += `\n───────────────\n`;
-            mensaje += `💰 *TOTAL A PAGAR: ${totalPedido.toLocaleString('es-VE', { minimumFractionDigits: 2 })}$*`;
-            mensaje += `\n───────────────\n\n¿Cómo procedo con el pago?`;
+            mensaje += `\nTotal: ${totalPedido.toFixed(2)}`;
+            mensaje += "\n\n¿Como puedo concretar el pago?";
 
             const urlWA = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
             window.open(urlWA, '_blank');
