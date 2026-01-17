@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Tienda de Delicateses</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Estilo para que los botones se vean bien al tocarlos en el celular */
-        .btn-categoria:active { transform: scale(0.95); }
-    </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 
@@ -19,9 +15,9 @@
 
     <nav class="sticky top-0 bg-white shadow-md z-50 p-4 overflow-x-auto">
         <div class="flex justify-start sm:justify-center space-x-3 min-w-max pb-2">
-            <button onclick="filtrar('Todos')" class="btn-categoria px-5 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase shadow-sm">Todos</button>
+            <button onclick="filtrar('Todos')" class="btn-categoria px-5 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase">Todos</button>
             <button onclick="filtrar('Bebidas')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Bebidas</button>
-            <button onclick="filtrar('Lacteos')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Lácteos</button>
+            <button onclick="filtrar('Lacteos')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition border-none">Lácteos</button>
             <button onclick="filtrar('Dulces')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Dulces</button>
             <button onclick="filtrar('Comidas')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Comidas</button>
         </div>
@@ -30,14 +26,15 @@
     <main class="max-w-7xl mx-auto p-6">
         <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div class="text-center col-span-full py-20">
-                <p class="text-gray-500 animate-pulse">Cargando las delicias del día...</p>
+                <p class="text-gray-500 animate-pulse">Cargando catálogo...</p>
             </div>
         </div>
     </main>
 
     <script>
-        // --- CONEXIÓN CON TU GOOGLE SHEET ---
         const URL_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpE0FerqhEE8yNXyRDzj2fiD-Vklju45agNVfViFnQ_BP1EPzWaaBzaSqKX4nqFA/pub?output=csv'; 
+        // CAMBIA ESTO POR TU NÚMERO (Incluye código de país sin el +)
+        const MI_WHATSAPP = '584120000000'; 
 
         let productosBase = [];
 
@@ -45,26 +42,19 @@
             try {
                 const respuesta = await fetch(URL_CSV);
                 const texto = await respuesta.text();
-                
-                // Dividir por filas y limpiar datos
                 const filas = texto.split('\n').slice(1);
                 productosBase = filas.map(fila => {
-                    // Separar columnas por coma (manejando posibles comillas)
                     const columnas = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
                         nombre: columnas[0]?.replace(/"/g, '').trim(),
                         categoria: columnas[1]?.replace(/"/g, '').trim(),
                         precio: columnas[2]?.replace(/"/g, '').trim(),
-                        imagen: columnas[3]?.replace(/"/g, '').trim(),
-                        link: columnas[4]?.replace(/"/g, '').trim()
+                        imagen: columnas[3]?.replace(/"/g, '').trim()
                     };
-                }).filter(p => p.nombre && p.nombre.length > 1);
-
+                }).filter(p => p.nombre);
                 dibujarProductos(productosBase);
             } catch (error) {
-                console.error("Error cargando el inventario:", error);
-                document.getElementById('contenedor-productos').innerHTML = 
-                    "<p class='text-center col-span-full text-red-500'>Hubo un problema al conectar con el inventario.</p>";
+                document.getElementById('contenedor-productos').innerHTML = "Error al cargar.";
             }
         }
 
@@ -72,32 +62,23 @@
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
 
-            if(lista.length === 0) {
-                contenedor.innerHTML = "<p class='text-center col-span-full py-10'>No hay productos en esta categoría.</p>";
-                return;
-            }
-
             lista.forEach(p => {
+                // AQUÍ ESTÁ EL TRUCO: Creamos el link de WhatsApp dinámico
+                const mensaje = `Hola, me interesa el producto: ${p.nombre}`;
+                const linkWA = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col">
-                        <div class="h-64 bg-gray-200 overflow-hidden relative">
-                            <img src="${p.imagen}" alt="${p.nombre}" 
-                                 class="w-full h-full object-cover" 
-                                 onerror="this.src='https://placehold.co/400x400?text=Imagen+No+Disponible'">
-                            <div class="absolute top-4 left-4">
-                                <span class="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-black uppercase text-amber-700 shadow-sm border border-amber-100">
-                                    ${p.categoria}
-                                </span>
-                            </div>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                        <div class="h-64 bg-gray-200">
+                            <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400?text=Foto'">
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-xl font-bold text-gray-800 leading-tight">${p.nombre}</h3>
-                            <div class="mt-4 flex items-center justify-between">
-                                <span class="text-2xl font-black text-gray-900">${p.precio}</span>
-                            </div>
-                            <a href="${p.link}" target="_blank" 
-                               class="mt-6 block w-full bg-amber-600 text-white text-center py-4 rounded-2xl font-bold text-sm hover:bg-gray-900 transition-colors shadow-lg shadow-amber-100">
-                                HACER PEDIDO
+                            <span class="text-[10px] font-black uppercase text-amber-600">${p.categoria}</span>
+                            <h3 class="text-xl font-bold text-gray-800">${p.nombre}</h3>
+                            <p class="text-2xl font-black text-gray-900 mt-2">${p.precio}</p>
+                            <a href="${linkWA}" target="_blank" 
+                               class="mt-6 block w-full bg-amber-600 text-white text-center py-4 rounded-2xl font-bold hover:bg-gray-900 transition-colors shadow-lg">
+                                PEDIR POR WHATSAPP
                             </a>
                         </div>
                     </div>
@@ -105,31 +86,11 @@
             });
         }
 
-        function filtrar(categoria) {
-            // Actualizar estilo de los botones para saber cuál está activo
-            const botones = document.querySelectorAll('.btn-categoria');
-            botones.forEach(btn => {
-                if(btn.innerText.toLowerCase().includes(categoria.toLowerCase()) || (categoria === 'Todos' && btn.innerText === 'TODOS')) {
-                    btn.classList.add('bg-amber-600', 'text-white');
-                    btn.classList.remove('bg-gray-100', 'text-gray-700');
-                } else {
-                    btn.classList.remove('bg-amber-600', 'text-white');
-                    btn.classList.add('bg-gray-100', 'text-gray-700');
-                }
-            });
-
-            if (categoria === 'Todos') {
-                dibujarProductos(productosBase);
-            } else {
-                // Filtramos ignorando mayúsculas/minúsculas y espacios
-                const filtrados = productosBase.filter(p => 
-                    p.categoria.toLowerCase().trim() === categoria.toLowerCase().trim()
-                );
-                dibujarProductos(filtrados);
-            }
+        function filtrar(cat) {
+            const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria === cat);
+            dibujarProductos(filtrados);
         }
 
-        // Cargar los datos al abrir la página
         obtenerDatos();
     </script>
 </body>
