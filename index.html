@@ -3,21 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@Jauja delicateses - Catálogo</title>
+    <title>@Jauja delicateses - Catálogo Gourmet</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         .btn-categoria:active { transform: scale(0.95); }
-        img { transition: opacity 0.3s; }
+        /* Animación suave para el carrito */
+        #btn-carrito { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast-exito {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            z-index: 100;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-900">
+<body class="bg-gray-50 font-sans text-gray-900 pb-24">
 
-    <header class="bg-amber-600 text-white py-8 px-4 text-center shadow-lg">
+    <div id="contenedor-notificaciones"></div>
+
+    <header class="bg-amber-600 text-white py-10 px-4 text-center shadow-lg">
         <h1 class="text-4xl font-extrabold tracking-tight italic">@Jauja delicateses</h1>
         <p class="mt-2 text-amber-100 text-sm uppercase tracking-widest font-semibold">Sabor y Calidad Premium</p>
     </header>
 
-    <nav class="sticky top-0 bg-white shadow-md z-50 p-4 overflow-x-auto">
+    <nav class="sticky top-0 bg-white/80 backdrop-blur-md shadow-md z-50 p-4 overflow-x-auto">
         <div class="flex justify-start sm:justify-center space-x-3 min-w-max pb-2">
             <button onclick="filtrar('Todos')" class="btn-categoria px-6 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase shadow-sm border-none">Todos</button>
             <button onclick="filtrar('Bebidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Bebidas</button>
@@ -30,17 +45,32 @@
     <main class="max-w-7xl mx-auto p-6">
         <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div class="text-center col-span-full py-20">
-                <p class="text-gray-500 animate-pulse text-lg">Abriendo nuestra despensa...</p>
+                <p class="text-gray-500 animate-pulse text-lg">Preparando selección gourmet...</p>
             </div>
         </div>
     </main>
 
+    <div id="btn-carrito" class="fixed bottom-6 right-6 z-[60] translate-y-32 opacity-0">
+        <button onclick="enviarPedido()" class="group bg-green-600 text-white pl-4 pr-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 hover:bg-green-700 hover:scale-105 transition-all">
+            <div class="relative">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span id="cuenta-carrito" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-green-600">0</span>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] uppercase font-black leading-none opacity-80">Finalizar pedido</p>
+                <p class="font-bold text-lg leading-tight">WhatsApp</p>
+            </div>
+        </button>
+    </div>
+
     <script>
-        // CONFIGURACIÓN
         const URL_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpE0FerqhEE8yNXyRDzj2fiD-Vklju45agNVfViFnQ_BP1EPzWaaBzaSqKX4nqFA/pub?output=csv'; 
         const MI_WHATSAPP = '584147799852'; 
 
         let productosBase = [];
+        let carrito = [];
 
         async function obtenerDatos() {
             try {
@@ -52,7 +82,7 @@
                     const columnas = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
                         nombre: columnas[0]?.replace(/"/g, '').trim(),
-                        categoria: columnas[1]?.replace(/"/g, '').trim(), // Eliminamos espacios del Excel
+                        categoria: columnas[1]?.replace(/"/g, '').trim(),
                         precio: columnas[2]?.replace(/"/g, '').trim(),
                         imagen: columnas[3]?.replace(/"/g, '').trim()
                     };
@@ -68,56 +98,79 @@
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
 
-            if(lista.length === 0) {
-                contenedor.innerHTML = "<p class='text-center col-span-full py-10 text-gray-400 font-medium'>No hay productos disponibles en esta sección por ahora.</p>";
-                return;
-            }
-
             lista.forEach(p => {
-                const textoWA = `Hola @Jauja delicateses, me interesa el producto: ${p.nombre}`;
-                const linkFinal = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(textoWA)}`;
-
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-300">
-                        <div class="h-64 bg-gray-100 relative group">
-                            <img src="${p.imagen}" alt="${p.nombre}" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                                 onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
-                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800 shadow-sm">
-                                ${p.categoria}
-                            </span>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated animate__fadeInUp">
+                        <div class="h-64 bg-gray-100 relative group overflow-hidden">
+                            <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800 shadow-sm">${p.categoria}</span>
                         </div>
-                        <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center">${p.nombre}</h3>
-                            <div class="mt-4 flex items-center justify-between">
+                        <div class="p-6 flex flex-col flex-grow text-center">
+                            <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center justify-center">${p.nombre}</h3>
+                            <div class="mt-2">
                                 <span class="text-2xl font-black text-amber-600">${p.precio}</span>
                             </div>
-                            <a href="${linkFinal}" target="_blank" 
-                               class="mt-6 block w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-bold text-sm hover:bg-amber-600 transition-colors shadow-lg">
-                                HACER PEDIDO
-                            </a>
+                            <button onclick="agregarAlCarrito('${p.nombre}', '${p.precio}')" class="mt-6 block w-full bg-gray-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-amber-600 transition-all active:scale-95 shadow-lg">
+                                + AGREGAR
+                            </button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        function filtrar(cat) {
-            const botones = document.querySelectorAll('.btn-categoria');
+        function agregarAlCarrito(nombre, precio) {
+            carrito.push({ nombre, precio });
+            mostrarNotificacion(`✅ ${nombre} añadido`);
+            actualizarInterfazCarrito();
+        }
+
+        function mostrarNotificacion(mensaje) {
+            const container = document.getElementById('contenedor-notificaciones');
+            const toast = document.createElement('div');
+            toast.className = 'toast-exito animate__animated animate__fadeInRight';
+            toast.innerText = mensaje;
+            container.appendChild(toast);
             
-            botones.forEach(b => {
-                // Comparamos el texto del botón con la categoría enviada
-                const textoBoton = b.innerText.trim();
-                const esActivo = (cat === 'Todos' && textoBoton === 'TODOS') || (textoBoton.toLowerCase() === cat.toLowerCase());
-                
-                b.className = `btn-categoria px-6 py-2 rounded-full font-bold text-xs uppercase transition shadow-sm ${esActivo ? 'bg-amber-600 text-white border-none' : 'bg-gray-100 text-gray-700 hover:bg-amber-500 hover:text-white'}`;
+            setTimeout(() => {
+                toast.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
+                setTimeout(() => toast.remove(), 500);
+            }, 2000);
+        }
+
+        function actualizarInterfazCarrito() {
+            const btn = document.getElementById('btn-carrito');
+            const cuenta = document.getElementById('cuenta-carrito');
+            
+            if (carrito.length > 0) {
+                btn.classList.remove('translate-y-32', 'opacity-0');
+                btn.classList.add('translate-y-0', 'opacity-100');
+                cuenta.innerText = carrito.length;
+            }
+        }
+
+        function enviarPedido() {
+            let mensaje = "¡Hola @Jauja delicateses! 👋\n\nHe seleccionado estos productos en el catálogo:\n\n";
+            
+            // Agrupar productos repetidos para que el mensaje sea más corto
+            const resumen = {};
+            carrito.forEach(item => {
+                resumen[item.nombre] = (resumen[item.nombre] || 0) + 1;
             });
 
-            // Filtrado ignorando mayúsculas/minúsculas y espacios
-            const filtrados = cat === 'Todos' 
-                ? productosBase 
-                : productosBase.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
-            
+            for (const [prod, cant] of Object.entries(resumen)) {
+                mensaje += `🔸 *${cant}x* ${prod}\n`;
+            }
+
+            mensaje += `\n*Cantidad total:* ${carrito.length} artículos`;
+            mensaje += "\n\n¿Me podrían confirmar disponibilidad y formas de pago?";
+
+            const urlWA = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+            window.open(urlWA, '_blank');
+        }
+
+        function filtrar(cat) {
+            const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria.toLowerCase().trim() === cat.toLowerCase().trim());
             dibujarProductos(filtrados);
         }
 
