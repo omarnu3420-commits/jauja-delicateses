@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market Delicateses - Tu Tienda Online</title>
+    <title>@Jauja delicateses - Catálogo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .btn-categoria:active { transform: scale(0.95); }
-        /* Suavizar la carga de imágenes */
         img { transition: opacity 0.3s; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 
     <header class="bg-amber-600 text-white py-8 px-4 text-center shadow-lg">
-        <h1 class="text-3xl font-extrabold tracking-tight italic">Market Delicateses</h1>
-        <p class="mt-2 text-amber-100 text-sm uppercase tracking-widest">Calidad Premium en tu mesa</p>
+        <h1 class="text-4xl font-extrabold tracking-tight italic">@Jauja delicateses</h1>
+        <p class="mt-2 text-amber-100 text-sm uppercase tracking-widest font-semibold">Sabor y Calidad Premium</p>
     </header>
 
     <nav class="sticky top-0 bg-white shadow-md z-50 p-4 overflow-x-auto">
@@ -31,15 +30,15 @@
     <main class="max-w-7xl mx-auto p-6">
         <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div class="text-center col-span-full py-20">
-                <p class="text-gray-500 animate-bounce">Preparando el catálogo...</p>
+                <p class="text-gray-500 animate-pulse text-lg">Abriendo nuestra despensa...</p>
             </div>
         </div>
     </main>
 
     <script>
-        // CONFIGURACIÓN PRINCIPAL
+        // CONFIGURACIÓN
         const URL_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpE0FerqhEE8yNXyRDzj2fiD-Vklju45agNVfViFnQ_BP1EPzWaaBzaSqKX4nqFA/pub?output=csv'; 
-        const MI_WHATSAPP = '584147799852'; // Tu número configurado
+        const MI_WHATSAPP = '584147799852'; 
 
         let productosBase = [];
 
@@ -56,14 +55,12 @@
                         categoria: columnas[1]?.replace(/"/g, '').trim(),
                         precio: columnas[2]?.replace(/"/g, '').trim(),
                         imagen: columnas[3]?.replace(/"/g, '').trim()
-                        // La columna 'Link' del Excel se ignora para evitar errores de texto doble
                     };
                 }).filter(p => p.nombre && p.nombre.length > 1);
 
                 dibujarProductos(productosBase);
             } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full'>Error al conectar con el inventario.</p>";
+                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error al conectar con el inventario.</p>";
             }
         }
 
@@ -72,30 +69,32 @@
             contenedor.innerHTML = '';
 
             if(lista.length === 0) {
-                contenedor.innerHTML = "<p class='text-center col-span-full py-10 text-gray-400'>No se encontraron productos en esta sección.</p>";
+                contenedor.innerHTML = "<p class='text-center col-span-full py-10 text-gray-400 font-medium'>No hay productos disponibles en esta sección por ahora.</p>";
                 return;
             }
 
             lista.forEach(p => {
-                // Mensaje limpio para WhatsApp
-                const textoWA = `Hola Market Delicateses, me interesa el producto: ${p.nombre}`;
+                // Mensaje con el nuevo nombre de la tienda
+                const textoWA = `Hola @Jauja delicateses, me interesa el producto: ${p.nombre}`;
                 const linkFinal = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(textoWA)}`;
 
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300">
-                        <div class="h-60 bg-gray-100 relative">
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-300">
+                        <div class="h-64 bg-gray-100 relative group">
                             <img src="${p.imagen}" alt="${p.nombre}" 
-                                 class="w-full h-full object-cover" 
-                                 onerror="this.src='https://placehold.co/400x400?text=Cargando+Foto...'">
-                            <span class="absolute top-3 left-3 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-amber-700 shadow-sm border border-amber-50">
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                 onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800 shadow-sm">
                                 ${p.categoria}
                             </span>
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
-                            <h3 class="text-xl font-bold text-gray-800 leading-tight h-14 overflow-hidden">${p.nombre}</h3>
-                            <p class="text-2xl font-black text-amber-600 mt-2">${p.precio}</p>
+                            <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center">${p.nombre}</h3>
+                            <div class="mt-4 flex items-center justify-between">
+                                <span class="text-2xl font-black text-amber-600">${p.precio}</span>
+                            </div>
                             <a href="${linkFinal}" target="_blank" 
-                               class="mt-6 block w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-bold text-sm hover:bg-amber-600 transition-colors">
+                               class="mt-6 block w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-bold text-sm hover:bg-amber-600 transition-colors shadow-lg">
                                 HACER PEDIDO
                             </a>
                         </div>
@@ -105,24 +104,14 @@
         }
 
         function filtrar(cat) {
-            // Actualizar botones
             const botones = document.querySelectorAll('.btn-categoria');
             botones.forEach(b => {
-                if(b.innerText.toLowerCase().includes(cat.toLowerCase()) || (cat === 'Todos' && b.innerText === 'TODOS')) {
-                    b.classList.add('bg-amber-600', 'text-white');
-                    b.classList.remove('bg-gray-100', 'text-gray-700');
-                } else {
-                    b.classList.remove('bg-amber-600', 'text-white');
-                    b.classList.add('bg-gray-100', 'text-gray-700');
-                }
+                const esActivo = b.innerText.toLowerCase().includes(cat.toLowerCase()) || (cat === 'Todos' && b.innerText === 'TODOS');
+                b.className = `btn-categoria px-6 py-2 rounded-full font-bold text-xs uppercase transition shadow-sm ${esActivo ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-amber-500 hover:text-white'}`;
             });
 
-            if (cat === 'Todos') {
-                dibujarProductos(productosBase);
-            } else {
-                const filtrados = productosBase.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
-                dibujarProductos(filtrados);
-            }
+            const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
+            dibujarProductos(filtrados);
         }
 
         obtenerDatos();
