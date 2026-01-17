@@ -11,10 +11,9 @@
         #btn-carrito { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .toast-exito {
             position: fixed; top: 20px; right: 20px; background: #10b981; color: white;
-            padding: 12px 24px; border-radius: 12px; z-index: 100;
+            padding: 12px 24px; border-radius: 12px; z-index: 110;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        /* Estilos para el Modal */
         #modal-resumen { display: none; }
         #modal-resumen.active { display: flex; }
     </style>
@@ -27,20 +26,20 @@
         <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate__animated animate__zoomInUp">
             <div class="bg-amber-600 p-6 text-white text-center">
                 <h2 class="text-2xl font-bold">Tu Pedido</h2>
-                <p class="text-amber-100 text-sm">Revisa los detalles antes de enviar</p>
+                <p class="text-amber-100 text-sm">Verifica los detalles de tu compra</p>
             </div>
-            <div id="lista-resumen" class="p-6 max-h-96 overflow-y-auto space-y-3">
+            <div id="lista-resumen" class="p-6 max-h-96 overflow-y-auto space-y-3 text-sm">
                 </div>
             <div class="p-6 bg-gray-50 border-t border-gray-100">
                 <div class="flex justify-between items-center mb-6">
-                    <span class="text-gray-500 font-bold uppercase tracking-wider">Total a pagar:</span>
+                    <span class="text-gray-500 font-bold uppercase tracking-wider">Total:</span>
                     <span id="total-modal" class="text-3xl font-black text-amber-600">0.00</span>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="cerrarModal()" class="py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-300 transition">VOLVER</button>
-                    <button onclick="confirmarPedido()" class="py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition">ENVIAR YA</button>
+                    <button onclick="confirmarPedido()" class="py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition">ENVIAR</button>
                 </div>
-                <button onclick="vaciarCarrito()" class="w-full mt-4 text-red-500 text-sm font-bold hover:underline">Vaciar y empezar de nuevo</button>
+                <button onclick="vaciarCarrito()" class="w-full mt-4 text-red-500 text-xs font-bold hover:underline italic">Anular y vaciar carrito</button>
             </div>
         </div>
     </div>
@@ -62,23 +61,20 @@
 
     <main class="max-w-7xl mx-auto p-6">
         <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="text-center col-span-full py-20">
-                <p class="text-gray-500 animate-pulse text-lg">Preparando selección gourmet...</p>
             </div>
-        </div>
     </main>
 
     <div id="btn-carrito" class="fixed bottom-6 right-6 z-[60] translate-y-32 opacity-0">
-        <button onclick="abrirResumen()" class="group bg-green-600 text-white pl-4 pr-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 hover:bg-green-700 hover:scale-105 transition-all">
+        <button onclick="abrirResumen()" class="bg-green-600 text-white pl-5 pr-7 py-4 rounded-2xl shadow-2xl flex items-center space-x-4 hover:bg-green-700 hover:scale-105 transition-all">
             <div class="relative">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <span id="cuenta-carrito" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-green-600">0</span>
+                <span id="cuenta-carrito" class="absolute -top-2 -right-2 bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full border-2 border-green-600">0</span>
             </div>
-            <div class="text-left">
-                <p class="text-[10px] uppercase font-black leading-none opacity-80">Revisar Pedido</p>
-                <p id="monto-total-flotante" class="font-bold text-lg leading-tight">0.00$</p>
+            <div class="text-left border-l border-white/20 pl-4">
+                <p class="text-[10px] uppercase font-black opacity-80 leading-none">Total Pedido</p>
+                <p id="monto-total-flotante" class="font-bold text-xl leading-tight">0.00$</p>
             </div>
         </button>
     </div>
@@ -106,7 +102,7 @@
                 }).filter(p => p.nombre && p.nombre.length > 1);
                 dibujarProductos(productosBase);
             } catch (error) {
-                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error de conexión.</p>";
+                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full'>Error cargando productos.</p>";
             }
         }
 
@@ -116,112 +112,96 @@
             lista.forEach(p => {
                 contenedor.innerHTML += `
                     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated animate__fadeInUp">
-                        <div class="h-64 bg-gray-100 relative group overflow-hidden">
-                            <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
-                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800 shadow-sm">${p.categoria}</span>
+                        <div class="h-64 relative overflow-hidden">
+                            <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800">${p.categoria}</span>
                         </div>
                         <div class="p-6 flex flex-col flex-grow text-center">
                             <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center justify-center">${p.nombre}</h3>
-                            <div class="mt-2">
-                                <span class="text-2xl font-black text-amber-600">${p.precio}</span>
-                            </div>
-                            <button onclick="agregarAlCarrito('${p.nombre}', '${p.precio}')" class="mt-6 block w-full bg-gray-900 text-white py-4 rounded-2xl font-bold text-sm hover:bg-amber-600 transition-all active:scale-95 shadow-lg">
-                                + AGREGAR
-                            </button>
+                            <span class="text-2xl font-black text-amber-600 mt-2">${p.precio}</span>
+                            <button onclick="agregarAlCarrito('${p.nombre}', '${p.precio}')" class="mt-6 w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-amber-600 transition-all shadow-lg">+ AGREGAR</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 
         function agregarAlCarrito(nombre, precio) {
-            const valorNumerico = parseFloat(precio.replace(/[^0-9,.]/g, '').replace(',', '.'));
-            carrito.push({ nombre, valor: valorNumerico });
+            const valor = parseFloat(precio.replace(/[^0-9,.]/g, '').replace(',', '.'));
+            carrito.push({ nombre, valor });
             mostrarNotificacion(`✅ ${nombre} añadido`);
-            actualizarInterfazCarrito();
+            actualizarInterfaz();
         }
 
-        function actualizarInterfazCarrito() {
+        function actualizarInterfaz() {
             const btn = document.getElementById('btn-carrito');
-            const cuenta = document.getElementById('cuenta-carrito');
-            const montoFlotante = document.getElementById('monto-total-flotante');
+            const total = carrito.reduce((sum, item) => sum + item.valor, 0);
             if (carrito.length > 0) {
-                const total = carrito.reduce((sum, item) => sum + item.valor, 0);
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
-                cuenta.innerText = carrito.length;
-                montoFlotante.innerText = total.toFixed(2) + "$";
+                document.getElementById('cuenta-carrito').innerText = carrito.length;
+                document.getElementById('monto-total-flotante').innerText = total.toFixed(2) + "$";
             } else {
                 btn.classList.add('translate-y-32', 'opacity-0');
             }
         }
 
         function abrirResumen() {
-            const modal = document.getElementById('modal-resumen');
             const lista = document.getElementById('lista-resumen');
-            const totalModal = document.getElementById('total-modal');
             lista.innerHTML = '';
-            
             const resumen = {};
-            let totalPedido = 0;
+            let total = 0;
+
             carrito.forEach(item => {
                 if (!resumen[item.nombre]) resumen[item.nombre] = { cant: 0, v: item.valor };
                 resumen[item.nombre].cant++;
-                totalPedido += item.valor;
+                total += item.valor;
             });
 
             for (const [nombre, info] of Object.entries(resumen)) {
-                const sub = info.cant * info.v;
                 lista.innerHTML += `
-                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
-                        <div class="text-gray-800">
-                            <span class="font-bold text-amber-600">${info.cant}x</span> ${nombre}
-                        </div>
-                        <div class="text-gray-400 text-sm italic">$${sub.toFixed(2)}</div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span><b class="text-amber-600">${info.cant}</b> ${nombre}</span>
+                        <span class="font-mono text-gray-500">$${(info.cant * info.v).toFixed(2)}</span>
                     </div>`;
             }
-
-            totalModal.innerText = totalPedido.toFixed(2) + "$";
-            modal.classList.add('active');
+            document.getElementById('total-modal').innerText = total.toFixed(2) + "$";
+            document.getElementById('modal-resumen').classList.add('active');
         }
 
-        function cerrarModal() {
-            document.getElementById('modal-resumen').classList.remove('active');
-        }
+        function cerrarModal() { document.getElementById('modal-resumen').classList.remove('active'); }
 
         function vaciarCarrito() {
-            if(confirm("¿Estás seguro de que quieres borrar todo tu pedido?")) {
-                carrito = [];
-                actualizarInterfazCarrito();
-                cerrarModal();
-            }
+            if(confirm("¿Vaciar carrito?")) { carrito = []; actualizarInterfaz(); cerrarModal(); }
         }
 
         function confirmarPedido() {
-            let mensaje = "Hola @Jauja delicateses, este es mi pedido:\n\n";
-            const resumen = {};
-            let totalPedido = 0;
+            const ahora = new Date();
+            const fecha = ahora.toLocaleDateString('es-ES');
+            const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
+            let msg = `*PEDIDO @JAUJA DELICATESES*\n`;
+            msg += `📅 Fecha: ${fecha} | ⏰ Hora: ${hora}\n`;
+            msg += `──────────────────\n\n`;
+
+            const resumen = {};
+            let total = 0;
             carrito.forEach(item => {
                 if (!resumen[item.nombre]) resumen[item.nombre] = { cant: 0, v: item.valor };
                 resumen[item.nombre].cant++;
-                totalPedido += item.valor;
+                total += item.valor;
             });
 
             for (const [nombre, info] of Object.entries(resumen)) {
-                const sub = info.cant * info.v;
-                mensaje += `${info.cant} ${nombre}  ${info.v.toFixed(2)} = ${sub.toFixed(2)}\n`;
+                msg += `${info.cant} ${nombre}  ${info.v.toFixed(2)} = ${(info.cant * info.v).toFixed(2)}\n`;
             }
 
-            mensaje += `\nTotal: ${totalPedido.toFixed(2)}`;
-            mensaje += "\n\n¿Como puedo concretar el pago?";
-
-            window.open(`https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
+            msg += `\n*Total a pagar: ${total.toFixed(2)}$*\n\n¿Como procedo con el pago?`;
+            window.open(`https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
         function filtrar(cat) {
-            const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria.toLowerCase().trim() === cat.toLowerCase().trim());
-            dibujarProductos(filtrados);
+            const f = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria.toLowerCase().trim() === cat.toLowerCase().trim());
+            dibujarProductos(f);
         }
 
         function mostrarNotificacion(m) {
@@ -230,10 +210,7 @@
             t.className = 'toast-exito animate__animated animate__fadeInRight';
             t.innerText = m;
             c.appendChild(t);
-            setTimeout(() => {
-                t.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
-                setTimeout(() => t.remove(), 500);
-            }, 2000);
+            setTimeout(() => { t.classList.replace('animate__fadeInRight', 'animate__fadeOutRight'); setTimeout(() => t.remove(), 500); }, 2000);
         }
 
         obtenerDatos();
