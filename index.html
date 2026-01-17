@@ -14,11 +14,36 @@
             padding: 12px 24px; border-radius: 12px; z-index: 100;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
+        /* Estilos para el Modal */
+        #modal-resumen { display: none; }
+        #modal-resumen.active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 pb-24">
 
     <div id="contenedor-notificaciones"></div>
+
+    <div id="modal-resumen" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate__animated animate__zoomInUp">
+            <div class="bg-amber-600 p-6 text-white text-center">
+                <h2 class="text-2xl font-bold">Tu Pedido</h2>
+                <p class="text-amber-100 text-sm">Revisa los detalles antes de enviar</p>
+            </div>
+            <div id="lista-resumen" class="p-6 max-h-96 overflow-y-auto space-y-3">
+                </div>
+            <div class="p-6 bg-gray-50 border-t border-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-gray-500 font-bold uppercase tracking-wider">Total a pagar:</span>
+                    <span id="total-modal" class="text-3xl font-black text-amber-600">0.00</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="cerrarModal()" class="py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-300 transition">VOLVER</button>
+                    <button onclick="confirmarPedido()" class="py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition">ENVIAR YA</button>
+                </div>
+                <button onclick="vaciarCarrito()" class="w-full mt-4 text-red-500 text-sm font-bold hover:underline">Vaciar y empezar de nuevo</button>
+            </div>
+        </div>
+    </div>
 
     <header class="bg-amber-600 text-white py-10 px-4 text-center shadow-lg">
         <h1 class="text-4xl font-extrabold tracking-tight italic">@Jauja delicateses</h1>
@@ -44,7 +69,7 @@
     </main>
 
     <div id="btn-carrito" class="fixed bottom-6 right-6 z-[60] translate-y-32 opacity-0">
-        <button onclick="enviarPedido()" class="group bg-green-600 text-white pl-4 pr-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 hover:bg-green-700 hover:scale-105 transition-all">
+        <button onclick="abrirResumen()" class="group bg-green-600 text-white pl-4 pr-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 hover:bg-green-700 hover:scale-105 transition-all">
             <div class="relative">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -52,8 +77,8 @@
                 <span id="cuenta-carrito" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-green-600">0</span>
             </div>
             <div class="text-left">
-                <p class="text-[10px] uppercase font-black leading-none opacity-80">Subtotal: <span id="monto-total-flotante">0.00</span></p>
-                <p class="font-bold text-lg leading-tight text-white">Pedir por WhatsApp</p>
+                <p class="text-[10px] uppercase font-black leading-none opacity-80">Revisar Pedido</p>
+                <p id="monto-total-flotante" class="font-bold text-lg leading-tight">0.00$</p>
             </div>
         </button>
     </div>
@@ -70,7 +95,6 @@
                 const respuesta = await fetch(URL_CSV);
                 const texto = await respuesta.text();
                 const filas = texto.split('\n').slice(1);
-                
                 productosBase = filas.map(fila => {
                     const columnas = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
@@ -80,10 +104,9 @@
                         imagen: columnas[3]?.replace(/"/g, '').trim()
                     };
                 }).filter(p => p.nombre && p.nombre.length > 1);
-
                 dibujarProductos(productosBase);
             } catch (error) {
-                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error de conexión con el catálogo.</p>";
+                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error de conexión.</p>";
             }
         }
 
@@ -112,7 +135,6 @@
         }
 
         function agregarAlCarrito(nombre, precio) {
-            // Limpia el precio para que sea un número sumable (quita $, espacios, etc)
             const valorNumerico = parseFloat(precio.replace(/[^0-9,.]/g, '').replace(',', '.'));
             carrito.push({ nombre, valor: valorNumerico });
             mostrarNotificacion(`✅ ${nombre} añadido`);
@@ -123,41 +145,78 @@
             const btn = document.getElementById('btn-carrito');
             const cuenta = document.getElementById('cuenta-carrito');
             const montoFlotante = document.getElementById('monto-total-flotante');
-            
             if (carrito.length > 0) {
                 const total = carrito.reduce((sum, item) => sum + item.valor, 0);
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
                 cuenta.innerText = carrito.length;
-                montoFlotante.innerText = total.toFixed(2); 
+                montoFlotante.innerText = total.toFixed(2) + "$";
+            } else {
+                btn.classList.add('translate-y-32', 'opacity-0');
             }
         }
 
-        function enviarPedido() {
-            let mensaje = "Hola @Jauja delicateses, este es mi pedido:\n\n";
+        function abrirResumen() {
+            const modal = document.getElementById('modal-resumen');
+            const lista = document.getElementById('lista-resumen');
+            const totalModal = document.getElementById('total-modal');
+            lista.innerHTML = '';
+            
             const resumen = {};
             let totalPedido = 0;
-
-            // Agrupamos para calcular filas detalladas
             carrito.forEach(item => {
-                if (!resumen[item.nombre]) {
-                    resumen[item.nombre] = { cant: 0, valorUnitario: item.valor };
-                }
+                if (!resumen[item.nombre]) resumen[item.nombre] = { cant: 0, v: item.valor };
                 resumen[item.nombre].cant++;
                 totalPedido += item.valor;
             });
 
-            // Generar renglones: 2 hallacas 6.00 = 12.00
             for (const [nombre, info] of Object.entries(resumen)) {
-                const subtotal = info.cant * info.valorUnitario;
-                mensaje += `${info.cant} ${nombre}  ${info.valorUnitario.toFixed(2)} = ${subtotal.toFixed(2)}\n`;
+                const sub = info.cant * info.v;
+                lista.innerHTML += `
+                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                        <div class="text-gray-800">
+                            <span class="font-bold text-amber-600">${info.cant}x</span> ${nombre}
+                        </div>
+                        <div class="text-gray-400 text-sm italic">$${sub.toFixed(2)}</div>
+                    </div>`;
+            }
+
+            totalModal.innerText = totalPedido.toFixed(2) + "$";
+            modal.classList.add('active');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-resumen').classList.remove('active');
+        }
+
+        function vaciarCarrito() {
+            if(confirm("¿Estás seguro de que quieres borrar todo tu pedido?")) {
+                carrito = [];
+                actualizarInterfazCarrito();
+                cerrarModal();
+            }
+        }
+
+        function confirmarPedido() {
+            let mensaje = "Hola @Jauja delicateses, este es mi pedido:\n\n";
+            const resumen = {};
+            let totalPedido = 0;
+
+            carrito.forEach(item => {
+                if (!resumen[item.nombre]) resumen[item.nombre] = { cant: 0, v: item.valor };
+                resumen[item.nombre].cant++;
+                totalPedido += item.valor;
+            });
+
+            for (const [nombre, info] of Object.entries(resumen)) {
+                const sub = info.cant * info.v;
+                mensaje += `${info.cant} ${nombre}  ${info.v.toFixed(2)} = ${sub.toFixed(2)}\n`;
             }
 
             mensaje += `\nTotal: ${totalPedido.toFixed(2)}`;
             mensaje += "\n\n¿Como puedo concretar el pago?";
 
-            const urlWA = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
-            window.open(urlWA, '_blank');
+            window.open(`https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`, '_blank');
         }
 
         function filtrar(cat) {
