@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Tienda de Delicateses</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <header class="bg-amber-600 text-white p-6 text-center shadow-lg">
+        <h1 class="text-3xl font-bold">Delicateses & Consumo</h1>
+        <p class="text-sm opacity-90">Calidad a tu puerta</p>
+    </header>
+
+    <div class="flex flex-wrap justify-center gap-2 p-4 bg-white sticky top-0 z-10 shadow-sm">
+        <button onclick="filtrar('Todos')" class="px-4 py-2 bg-gray-200 rounded-full text-sm font-medium hover:bg-amber-500 hover:text-white transition">Todos</button>
+        <button onclick="filtrar('Bebidas')" class="px-4 py-2 bg-gray-200 rounded-full text-sm font-medium hover:bg-amber-500 hover:text-white">Bebidas</button>
+        <button onclick="filtrar('Lacteos')" class="px-4 py-2 bg-gray-200 rounded-full text-sm font-medium hover:bg-amber-500 hover:text-white">Lácteos</button>
+        <button onclick="filtrar('Dulces')" class="px-4 py-2 bg-gray-200 rounded-full text-sm font-medium hover:bg-amber-500 hover:text-white">Dulces</button>
+        <button onclick="filtrar('Comidas')" class="px-4 py-2 bg-gray-200 rounded-full text-sm font-medium hover:bg-amber-500 hover:text-white">Comidas</button>
+    </div>
+
+    <main id="productos" class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <p class="text-center col-span-full">Cargando delicias...</p>
+    </main>
+
+    <script>
+        // REEMPLAZA ESTA URL con el enlace .csv que copiaste de Google Sheets
+        const SHEET_URL = 'TU_URL_DE_GOOGLE_SHEETS_AQUI';
+
+        let todosLosProductos = [];
+
+        async function cargarProductos() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                const filas = data.split('\n').slice(1); // Ignorar cabecera
+
+                todosLosProductos = filas.map(fila => {
+                    const columnas = fila.split(',');
+                    return {
+                        nombre: columnas[0],
+                        categoria: columnas[1],
+                        precio: columnas[2],
+                        imagen: columnas[3],
+                        link: columnas[4]
+                    };
+                }).filter(p => p.nombre); // Limpiar filas vacías
+
+                mostrarProductos(todosLosProductos);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('productos').innerHTML = 'Error al cargar los datos.';
+            }
+        }
+
+        function mostrarProductos(lista) {
+            const contenedor = document.getElementById('productos');
+            contenedor.innerHTML = '';
+
+            lista.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
+                        <img src="${p.imagen}" class="w-full h-48 object-cover" alt="${p.nombre}">
+                        <div class="p-4">
+                            <span class="text-xs font-bold text-amber-600 uppercase">${p.categoria}</span>
+                            <h2 class="text-xl font-semibold text-gray-800">${p.nombre}</h2>
+                            <p class="text-lg font-bold text-green-600 mt-2">${p.precio}</p>
+                            <a href="${p.link}" target="_blank" class="block mt-4 w-full bg-amber-600 text-white text-center py-2 rounded-lg font-medium hover:bg-amber-700 transition">
+                                Comprar / Ver más
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filtrar(cat) {
+            if(cat === 'Todos') {
+                mostrarProductos(todosLosProductos);
+            } else {
+                const filtrados = todosLosProductos.filter(p => p.categoria.trim() === cat);
+                mostrarProductos(filtrados);
+            }
+        }
+
+        cargarProductos();
+    </script>
+</body>
+</html>
