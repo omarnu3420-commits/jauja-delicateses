@@ -3,38 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Tienda de Delicateses</title>
+    <title>Market Delicateses - Tu Tienda Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .btn-categoria:active { transform: scale(0.95); }
+        /* Suavizar la carga de imágenes */
+        img { transition: opacity 0.3s; }
+    </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 
     <header class="bg-amber-600 text-white py-8 px-4 text-center shadow-lg">
-        <h1 class="text-3xl font-extrabold tracking-tight">Market Delicateses</h1>
-        <p class="mt-2 text-amber-100 text-sm">Productos seleccionados para tu mesa</p>
+        <h1 class="text-3xl font-extrabold tracking-tight italic">Market Delicateses</h1>
+        <p class="mt-2 text-amber-100 text-sm uppercase tracking-widest">Calidad Premium en tu mesa</p>
     </header>
 
     <nav class="sticky top-0 bg-white shadow-md z-50 p-4 overflow-x-auto">
         <div class="flex justify-start sm:justify-center space-x-3 min-w-max pb-2">
-            <button onclick="filtrar('Todos')" class="btn-categoria px-5 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase">Todos</button>
-            <button onclick="filtrar('Bebidas')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Bebidas</button>
-            <button onclick="filtrar('Lacteos')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition border-none">Lácteos</button>
-            <button onclick="filtrar('Dulces')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Dulces</button>
-            <button onclick="filtrar('Comidas')" class="btn-categoria px-5 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Comidas</button>
+            <button onclick="filtrar('Todos')" class="btn-categoria px-6 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase shadow-sm border-none">Todos</button>
+            <button onclick="filtrar('Bebidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Bebidas</button>
+            <button onclick="filtrar('Lacteos')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Lácteos</button>
+            <button onclick="filtrar('Dulces')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Dulces</button>
+            <button onclick="filtrar('Comidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Comidas</button>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto p-6">
         <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div class="text-center col-span-full py-20">
-                <p class="text-gray-500 animate-pulse">Cargando catálogo...</p>
+                <p class="text-gray-500 animate-bounce">Preparando el catálogo...</p>
             </div>
         </div>
     </main>
 
     <script>
+        // CONFIGURACIÓN PRINCIPAL
         const URL_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQpE0FerqhEE8yNXyRDzj2fiD-Vklju45agNVfViFnQ_BP1EPzWaaBzaSqKX4nqFA/pub?output=csv'; 
-        // CAMBIA ESTO POR TU NÚMERO (Incluye código de país sin el +)
-        const MI_WHATSAPP = '584147799852'; 
+        const MI_WHATSAPP = '584147799852'; // Tu número configurado
 
         let productosBase = [];
 
@@ -43,6 +48,7 @@
                 const respuesta = await fetch(URL_CSV);
                 const texto = await respuesta.text();
                 const filas = texto.split('\n').slice(1);
+                
                 productosBase = filas.map(fila => {
                     const columnas = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
@@ -50,11 +56,14 @@
                         categoria: columnas[1]?.replace(/"/g, '').trim(),
                         precio: columnas[2]?.replace(/"/g, '').trim(),
                         imagen: columnas[3]?.replace(/"/g, '').trim()
+                        // La columna 'Link' del Excel se ignora para evitar errores de texto doble
                     };
-                }).filter(p => p.nombre);
+                }).filter(p => p.nombre && p.nombre.length > 1);
+
                 dibujarProductos(productosBase);
             } catch (error) {
-                document.getElementById('contenedor-productos').innerHTML = "Error al cargar.";
+                console.error("Error:", error);
+                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full'>Error al conectar con el inventario.</p>";
             }
         }
 
@@ -62,23 +71,32 @@
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
 
+            if(lista.length === 0) {
+                contenedor.innerHTML = "<p class='text-center col-span-full py-10 text-gray-400'>No se encontraron productos en esta sección.</p>";
+                return;
+            }
+
             lista.forEach(p => {
-                // AQUÍ ESTÁ EL TRUCO: Creamos el link de WhatsApp dinámico
-                const mensaje = `Hola, me interesa el producto: ${p.nombre}`;
-                const linkWA = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
+                // Mensaje limpio para WhatsApp
+                const textoWA = `Hola Market Delicateses, me interesa el producto: ${p.nombre}`;
+                const linkFinal = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(textoWA)}`;
 
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                        <div class="h-64 bg-gray-200">
-                            <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400?text=Foto'">
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-xl transition-shadow duration-300">
+                        <div class="h-60 bg-gray-100 relative">
+                            <img src="${p.imagen}" alt="${p.nombre}" 
+                                 class="w-full h-full object-cover" 
+                                 onerror="this.src='https://placehold.co/400x400?text=Cargando+Foto...'">
+                            <span class="absolute top-3 left-3 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-amber-700 shadow-sm border border-amber-50">
+                                ${p.categoria}
+                            </span>
                         </div>
                         <div class="p-6 flex flex-col flex-grow">
-                            <span class="text-[10px] font-black uppercase text-amber-600">${p.categoria}</span>
-                            <h3 class="text-xl font-bold text-gray-800">${p.nombre}</h3>
-                            <p class="text-2xl font-black text-gray-900 mt-2">${p.precio}</p>
-                            <a href="${linkWA}" target="_blank" 
-                               class="mt-6 block w-full bg-amber-600 text-white text-center py-4 rounded-2xl font-bold hover:bg-gray-900 transition-colors shadow-lg">
-                                PEDIR POR WHATSAPP
+                            <h3 class="text-xl font-bold text-gray-800 leading-tight h-14 overflow-hidden">${p.nombre}</h3>
+                            <p class="text-2xl font-black text-amber-600 mt-2">${p.precio}</p>
+                            <a href="${linkFinal}" target="_blank" 
+                               class="mt-6 block w-full bg-gray-900 text-white text-center py-4 rounded-2xl font-bold text-sm hover:bg-amber-600 transition-colors">
+                                HACER PEDIDO
                             </a>
                         </div>
                     </div>
@@ -87,8 +105,24 @@
         }
 
         function filtrar(cat) {
-            const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria === cat);
-            dibujarProductos(filtrados);
+            // Actualizar botones
+            const botones = document.querySelectorAll('.btn-categoria');
+            botones.forEach(b => {
+                if(b.innerText.toLowerCase().includes(cat.toLowerCase()) || (cat === 'Todos' && b.innerText === 'TODOS')) {
+                    b.classList.add('bg-amber-600', 'text-white');
+                    b.classList.remove('bg-gray-100', 'text-gray-700');
+                } else {
+                    b.classList.remove('bg-amber-600', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-700');
+                }
+            });
+
+            if (cat === 'Todos') {
+                dibujarProductos(productosBase);
+            } else {
+                const filtrados = productosBase.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
+                dibujarProductos(filtrados);
+            }
         }
 
         obtenerDatos();
