@@ -8,17 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
         .btn-categoria:active { transform: scale(0.95); }
-        /* Animación suave para el carrito */
         #btn-carrito { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .toast-exito {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            z-index: 100;
+            position: fixed; top: 20px; right: 20px; background: #10b981; color: white;
+            padding: 12px 24px; border-radius: 12px; z-index: 100;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
     </style>
@@ -59,8 +52,8 @@
                 <span id="cuenta-carrito" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-green-600">0</span>
             </div>
             <div class="text-left">
-                <p class="text-[10px] uppercase font-black leading-none opacity-80">Finalizar pedido</p>
-                <p class="font-bold text-lg leading-tight">WhatsApp</p>
+                <p class="text-[10px] uppercase font-black leading-none opacity-80">Total: <span id="monto-total-flotante">0</span></p>
+                <p class="font-bold text-lg leading-tight">Pedir por WhatsApp</p>
             </div>
         </button>
     </div>
@@ -90,14 +83,13 @@
 
                 dibujarProductos(productosBase);
             } catch (error) {
-                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error al conectar con el inventario.</p>";
+                document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full text-red-500'>Error de conexión.</p>";
             }
         }
 
         function dibujarProductos(lista) {
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
-
             lista.forEach(p => {
                 contenedor.innerHTML += `
                     <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated animate__fadeInUp">
@@ -120,50 +112,45 @@
         }
 
         function agregarAlCarrito(nombre, precio) {
-            carrito.push({ nombre, precio });
+            // Convertimos el precio a número para poder sumar
+            const valorNumerico = parseFloat(precio.replace(/[^0-9,.]/g, '').replace(',', '.'));
+            carrito.push({ nombre, precio, valor: valorNumerico });
             mostrarNotificacion(`✅ ${nombre} añadido`);
             actualizarInterfazCarrito();
-        }
-
-        function mostrarNotificacion(mensaje) {
-            const container = document.getElementById('contenedor-notificaciones');
-            const toast = document.createElement('div');
-            toast.className = 'toast-exito animate__animated animate__fadeInRight';
-            toast.innerText = mensaje;
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
-                setTimeout(() => toast.remove(), 500);
-            }, 2000);
         }
 
         function actualizarInterfazCarrito() {
             const btn = document.getElementById('btn-carrito');
             const cuenta = document.getElementById('cuenta-carrito');
+            const montoFlotante = document.getElementById('monto-total-flotante');
             
             if (carrito.length > 0) {
+                const total = carrito.reduce((sum, item) => sum + item.valor, 0);
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
                 cuenta.innerText = carrito.length;
+                montoFlotante.innerText = total.toLocaleString('es-VE', { minimumFractionDigits: 2 }) + "$"; 
             }
         }
 
         function enviarPedido() {
-            let mensaje = "¡Hola @Jauja delicateses! 👋\n\nHe seleccionado estos productos en el catálogo:\n\n";
-            
-            // Agrupar productos repetidos para que el mensaje sea más corto
+            let mensaje = "¡Hola @Jauja delicateses! 👋\n\nEste es mi pedido:\n\n";
             const resumen = {};
+            let totalPedido = 0;
+
             carrito.forEach(item => {
-                resumen[item.nombre] = (resumen[item.nombre] || 0) + 1;
+                resumen[item.nombre] = (resumen[item.nombre] || { cant: 0, valor: item.valor });
+                resumen[item.nombre].cant++;
+                totalPedido += item.valor;
             });
 
-            for (const [prod, cant] of Object.entries(resumen)) {
-                mensaje += `🔸 *${cant}x* ${prod}\n`;
+            for (const [prod, info] of Object.entries(resumen)) {
+                mensaje += `🔸 *${info.cant}x* ${prod}\n`;
             }
 
-            mensaje += `\n*Cantidad total:* ${carrito.length} artículos`;
-            mensaje += "\n\n¿Me podrían confirmar disponibilidad y formas de pago?";
+            mensaje += `\n───────────────\n`;
+            mensaje += `💰 *TOTAL A PAGAR: ${totalPedido.toLocaleString('es-VE', { minimumFractionDigits: 2 })}$*`;
+            mensaje += `\n───────────────\n\n¿Cómo procedo con el pago?`;
 
             const urlWA = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(mensaje)}`;
             window.open(urlWA, '_blank');
@@ -172,6 +159,18 @@
         function filtrar(cat) {
             const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria.toLowerCase().trim() === cat.toLowerCase().trim());
             dibujarProductos(filtrados);
+        }
+
+        function mostrarNotificacion(m) {
+            const c = document.getElementById('contenedor-notificaciones');
+            const t = document.createElement('div');
+            t.className = 'toast-exito animate__animated animate__fadeInRight';
+            t.innerText = m;
+            c.appendChild(t);
+            setTimeout(() => {
+                t.classList.replace('animate__fadeInRight', 'animate__fadeOutRight');
+                setTimeout(() => t.remove(), 500);
+            }, 2000);
         }
 
         obtenerDatos();
