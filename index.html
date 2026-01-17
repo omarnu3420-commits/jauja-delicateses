@@ -21,7 +21,7 @@
         <div class="flex justify-start sm:justify-center space-x-3 min-w-max pb-2">
             <button onclick="filtrar('Todos')" class="btn-categoria px-6 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase shadow-sm border-none">Todos</button>
             <button onclick="filtrar('Bebidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Bebidas</button>
-            <button onclick="filtrar('Lacteos')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Lácteos</button>
+            <button onclick="filtrar('Lacteos')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Lacteos</button>
             <button onclick="filtrar('Dulces')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Dulces</button>
             <button onclick="filtrar('Comidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Comidas</button>
         </div>
@@ -52,7 +52,7 @@
                     const columnas = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
                         nombre: columnas[0]?.replace(/"/g, '').trim(),
-                        categoria: columnas[1]?.replace(/"/g, '').trim(),
+                        categoria: columnas[1]?.replace(/"/g, '').trim(), // Eliminamos espacios del Excel
                         precio: columnas[2]?.replace(/"/g, '').trim(),
                         imagen: columnas[3]?.replace(/"/g, '').trim()
                     };
@@ -74,7 +74,6 @@
             }
 
             lista.forEach(p => {
-                // Mensaje con el nuevo nombre de la tienda
                 const textoWA = `Hola @Jauja delicateses, me interesa el producto: ${p.nombre}`;
                 const linkFinal = `https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(textoWA)}`;
 
@@ -105,12 +104,20 @@
 
         function filtrar(cat) {
             const botones = document.querySelectorAll('.btn-categoria');
+            
             botones.forEach(b => {
-                const esActivo = b.innerText.toLowerCase().includes(cat.toLowerCase()) || (cat === 'Todos' && b.innerText === 'TODOS');
-                b.className = `btn-categoria px-6 py-2 rounded-full font-bold text-xs uppercase transition shadow-sm ${esActivo ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-amber-500 hover:text-white'}`;
+                // Comparamos el texto del botón con la categoría enviada
+                const textoBoton = b.innerText.trim();
+                const esActivo = (cat === 'Todos' && textoBoton === 'TODOS') || (textoBoton.toLowerCase() === cat.toLowerCase());
+                
+                b.className = `btn-categoria px-6 py-2 rounded-full font-bold text-xs uppercase transition shadow-sm ${esActivo ? 'bg-amber-600 text-white border-none' : 'bg-gray-100 text-gray-700 hover:bg-amber-500 hover:text-white'}`;
             });
 
-            const filtrados = cat === 'Todos' ? productosBase : productosBase.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
+            // Filtrado ignorando mayúsculas/minúsculas y espacios
+            const filtrados = cat === 'Todos' 
+                ? productosBase 
+                : productosBase.filter(p => p.categoria.toLowerCase() === cat.toLowerCase());
+            
             dibujarProductos(filtrados);
         }
 
