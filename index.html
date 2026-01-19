@@ -16,10 +16,9 @@
         }
         #modal-resumen { display: none; }
         #modal-resumen.active { display: flex; }
-        
         #splash-oferta {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-            backdrop-filter: blur(10px); z-index: 200;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.94);
+            backdrop-filter: blur(12px); z-index: 200;
             display: none; align-items: center; justify-content: center;
         }
     </style>
@@ -31,9 +30,9 @@
             <h2 class="text-amber-500 text-4xl font-black italic mb-4 tracking-tighter">OFERTA DEL DÍA 🔥</h2>
             <div class="bg-white p-3 rounded-[3rem] shadow-2xl inline-block relative overflow-hidden">
                 <img id="img-oferta-dia" src="" class="w-80 h-80 object-cover rounded-[2.5rem] border-4 border-amber-500">
-                <div id="nombre-oferta-dia" class="absolute bottom-6 left-0 right-0 bg-amber-600 text-white font-bold py-3 mx-6 rounded-2xl shadow-lg text-lg"></div>
+                <div id="nombre-oferta-dia" class="absolute bottom-6 left-0 right-0 bg-amber-600 text-white font-bold py-3 mx-6 rounded-2xl shadow-lg text-lg px-2"></div>
             </div>
-            <p class="text-white mt-6 font-medium animate__animated animate__pulse animate__infinite opacity-80 text-sm tracking-widest uppercase">Cargando delicias...</p>
+            <p class="text-white mt-6 font-medium animate__animated animate__pulse animate__infinite opacity-80 text-sm tracking-widest uppercase italic">Preparando el sabor de Jauja...</p>
         </div>
     </div>
 
@@ -42,7 +41,7 @@
     <div id="modal-resumen" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate__animated animate__zoomInUp">
             <div class="bg-amber-600 p-6 text-white text-center">
-                <h2 class="text-2xl font-bold">Tu Pedido</h2>
+                <h2 class="text-2xl font-bold italic">Tu Pedido</h2>
                 <p class="text-amber-100 text-sm">Verifica los detalles de tu compra</p>
             </div>
             <div id="lista-resumen" class="p-6 max-h-96 overflow-y-auto space-y-3 text-sm"></div>
@@ -52,10 +51,10 @@
                     <span id="total-modal" class="text-3xl font-black text-amber-600">0.00</span>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button onclick="cerrarModal()" class="py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-300 transition">VOLVER</button>
-                    <button onclick="confirmarPedido()" class="py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition">ENVIAR</button>
+                    <button onclick="cerrarModal()" class="py-4 bg-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-300 transition uppercase text-xs">Volver</button>
+                    <button onclick="confirmarPedido()" class="py-4 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition uppercase text-xs">Enviar WhatsApp</button>
                 </div>
-                <button onclick="vaciarCarrito()" class="w-full mt-4 text-red-500 text-xs font-bold hover:underline italic">Anular y vaciar carrito</button>
+                <button onclick="vaciarCarrito()" class="w-full mt-4 text-red-500 text-[10px] font-bold hover:underline italic uppercase tracking-tighter">Anular y vaciar carrito</button>
             </div>
         </div>
     </div>
@@ -67,12 +66,12 @@
 
     <nav class="sticky top-0 bg-white/80 backdrop-blur-md shadow-md z-50 p-4 overflow-x-auto">
         <div class="flex justify-start sm:justify-center space-x-3 min-w-max pb-2">
-            <button onclick="filtrar('Todos')" class="btn-categoria px-6 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase shadow-sm border-none">Todos</button>
+            <button onclick="filtrar('Todos')" class="btn-categoria px-6 py-2 rounded-full bg-amber-600 text-white font-bold text-xs uppercase shadow-sm">Todos</button>
             <button onclick="filtrar('Bebidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Bebidas</button>
             <button onclick="filtrar('Lacteos')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Lacteos</button>
             <button onclick="filtrar('Dulces')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Dulces</button>
             <button onclick="filtrar('Comidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Comidas</button>
-            <button onclick="salirApp()" class="btn-categoria px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs uppercase shadow-md hover:bg-red-700 transition ml-4">SALIR</button>
+            <button onclick="salirApp()" class="btn-categoria px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs uppercase shadow-md hover:bg-red-700 transition ml-4 italic">SALIR</button>
         </div>
     </nav>
 
@@ -81,7 +80,7 @@
     </main>
 
     <div id="btn-carrito" class="fixed bottom-6 right-6 z-[60] translate-y-32 opacity-0">
-        <button onclick="abrirResumen()" class="bg-green-600 text-white pl-5 pr-7 py-4 rounded-2xl shadow-2xl flex items-center space-x-4 hover:bg-green-700 hover:scale-105 transition-all">
+        <button onclick="abrirResumen()" class="bg-green-600 text-white pl-5 pr-7 py-4 rounded-3xl shadow-2xl flex items-center space-x-4 hover:bg-green-700 hover:scale-105 transition-all">
             <div class="relative">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -130,7 +129,7 @@
                     setTimeout(() => {
                         splash.classList.add('animate__animated', 'animate__fadeOut');
                         setTimeout(() => splash.style.display = 'none', 800);
-                    }, 3000);
+                    }, 3500);
                 }
 
                 dibujarProductos(productosBase);
@@ -142,23 +141,25 @@
         function dibujarProductos(lista) {
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
-            const hoy = new Date().getDay(); 
+            const hoy = new Date().getDay(); // 0 = Domingo
 
             lista.forEach((p) => {
                 const esOferta = p.oferta === "1";
                 let disponibleHoy = true;
                 let msjDispo = "";
 
-                // NUEVA LÓGICA DE MENSAJE SOLICITADA
-                if (p.disponibilidad === "D" && hoy !== 0) {
-                    disponibleHoy = false;
-                    msjDispo = "Solo los Domingos o Bajo Pedido";
+                // --- LÓGICA DE MENSAJES DIFERENCIADOS ---
+                if (p.disponibilidad === "D") {
+                    if (hoy !== 0) {
+                        disponibleHoy = false;
+                        msjDispo = "Solo los Domingos o Bajo Pedido";
+                    }
                 } else if (p.disponibilidad === "P") {
-                    msjDispo = "Solo los Domingos o Bajo Pedido";
+                    msjDispo = "Bajo Pedido";
                 }
 
                 const badgeOferta = esOferta ? `<div class="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg animate__animated animate__heartBeat animate__infinite z-20">OFERTA 🔥</div>` : '';
-                const bordeOferta = esOferta ? 'border-amber-500 ring-4 ring-amber-500/20' : 'border-gray-100';
+                const bordeOferta = esOferta ? 'border-amber-500 ring-4 ring-amber-500/20 shadow-xl' : 'border-gray-100';
                 const claseImagen = disponibleHoy ? "" : "grayscale opacity-40";
 
                 contenedor.innerHTML += `
@@ -167,7 +168,7 @@
                             <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover ${claseImagen}" onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
                             <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800 z-20">${p.categoria}</span>
                             ${badgeOferta}
-                            ${msjDispo ? `<div class="absolute inset-x-0 bottom-4 flex justify-center z-10 px-4"><span class="bg-black/80 text-white text-[10px] font-bold px-4 py-2 rounded-xl backdrop-blur-sm text-center w-full">${msjDispo}</span></div>` : ''}
+                            ${msjDispo ? `<div class="absolute inset-x-0 bottom-4 flex justify-center z-10 px-4"><span class="bg-black/80 text-white text-[10px] font-bold px-4 py-2 rounded-xl backdrop-blur-sm text-center w-full italic">${msjDispo}</span></div>` : ''}
                         </div>
                         <div class="p-6 flex flex-col flex-grow text-center ${esOferta ? 'bg-amber-50/30' : ''}">
                             <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center justify-center">${p.nombre}</h3>
@@ -175,7 +176,7 @@
                             
                             ${disponibleHoy ? 
                                 `<button onclick="agregarAlCarrito('${p.nombre}', '${p.precio}')" class="mt-6 w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-amber-600 transition-all shadow-lg active:scale-95 uppercase text-[10px] tracking-widest">+ Agregar</button>` :
-                                `<button disabled class="mt-6 w-full bg-gray-200 text-gray-400 py-4 rounded-2xl font-bold cursor-not-allowed uppercase text-[10px] tracking-widest italic">No disponible</button>`
+                                `<button disabled class="mt-6 w-full bg-gray-200 text-gray-400 py-4 rounded-2xl font-bold cursor-not-allowed uppercase text-[10px] tracking-widest italic">No disponible hoy</button>`
                             }
                         </div>
                     </div>`;
@@ -235,7 +236,7 @@
         }
 
         function salirApp() {
-            if(confirm("¿Deseas salir? Se perderá el pedido.")) {
+            if(confirm("¿Deseas salir? El pedido se borrará.")) {
                 carrito = [];
                 window.location.reload();
             }
@@ -266,7 +267,7 @@
 
             msg += `\n──────────────────\n`;
             msg += `*TOTAL A PAGAR: ${total.toFixed(2)}$*\n\n`;
-            msg += `¿Cómo procedo con el pago?`;
+            msg += `¿Me confirman disponibilidad y pago?`;
 
             window.open(`https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
         }
@@ -279,7 +280,7 @@
         function mostrarNotificacion(m) {
             const c = document.getElementById('contenedor-notificaciones');
             const t = document.createElement('div');
-            t.className = 'toast-exito animate__animated animate__fadeInRight';
+            t.className = 'toast-exito animate__animated animate__fadeInRight text-[11px] font-bold';
             t.innerText = m;
             c.appendChild(t);
             setTimeout(() => { 
