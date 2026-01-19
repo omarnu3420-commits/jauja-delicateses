@@ -28,8 +28,7 @@
                 <h2 class="text-2xl font-bold">Tu Pedido</h2>
                 <p class="text-amber-100 text-sm">Verifica los detalles de tu compra</p>
             </div>
-            <div id="lista-resumen" class="p-6 max-h-96 overflow-y-auto space-y-3 text-sm">
-                </div>
+            <div id="lista-resumen" class="p-6 max-h-96 overflow-y-auto space-y-3 text-sm"></div>
             <div class="p-6 bg-gray-50 border-t border-gray-100">
                 <div class="flex justify-between items-center mb-6">
                     <span class="text-gray-500 font-bold uppercase tracking-wider">Total:</span>
@@ -60,8 +59,7 @@
     </nav>
 
     <main class="max-w-7xl mx-auto p-6">
-        <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            </div>
+        <div id="contenedor-productos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"></div>
     </main>
 
     <div id="btn-carrito" class="fixed bottom-6 right-6 z-[60] translate-y-32 opacity-0">
@@ -134,14 +132,23 @@
 
         function actualizarInterfaz() {
             const btn = document.getElementById('btn-carrito');
-            const total = carrito.reduce((sum, item) => sum + item.valor, 0);
+            const cuenta = document.getElementById('cuenta-carrito');
+            const montoFlotante = document.getElementById('monto-total-flotante');
+            
             if (carrito.length > 0) {
+                const total = carrito.reduce((sum, item) => sum + item.valor, 0);
+                cuenta.innerText = carrito.length;
+                montoFlotante.innerText = total.toFixed(2) + "$";
+                
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
-                document.getElementById('cuenta-carrito').innerText = carrito.length;
-                document.getElementById('monto-total-flotante').innerText = total.toFixed(2) + "$";
             } else {
+                // Al vaciar, primero ponemos los valores a cero
+                cuenta.innerText = "0";
+                montoFlotante.innerText = "0.00$";
+                // Luego ocultamos el botón
                 btn.classList.add('translate-y-32', 'opacity-0');
+                btn.classList.remove('translate-y-0', 'opacity-100');
             }
         }
 
@@ -171,10 +178,15 @@
         function cerrarModal() { document.getElementById('modal-resumen').classList.remove('active'); }
 
         function vaciarCarrito() {
-            if(confirm("¿Vaciar carrito?")) { carrito = []; actualizarInterfaz(); cerrarModal(); }
+            if(confirm("¿Deseas anular el pedido y vaciar el carrito?")) { 
+                carrito = []; 
+                actualizarInterfaz(); 
+                cerrarModal(); 
+            }
         }
 
         function confirmarPedido() {
+            if (carrito.length === 0) return;
             const ahora = new Date();
             const fecha = ahora.toLocaleDateString('es-ES');
             const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
@@ -192,10 +204,10 @@
             });
 
             for (const [nombre, info] of Object.entries(resumen)) {
-                msg += `${info.cant} ${nombre}  ${info.v.toFixed(2)} = ${(info.cant * info.v).toFixed(2)}\n`;
+                msg += `${info.cant} x ${nombre} ($${info.v.toFixed(2)}) = $${(info.cant * info.v).toFixed(2)}\n`;
             }
 
-            msg += `\n*Total a pagar: ${total.toFixed(2)}$*\n\n¿Como procedo con el pago?`;
+            msg += `\n*Total a pagar: ${total.toFixed(2)}$*\n\n¿Cómo procedo con el pago?`;
             window.open(`https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
@@ -210,7 +222,10 @@
             t.className = 'toast-exito animate__animated animate__fadeInRight';
             t.innerText = m;
             c.appendChild(t);
-            setTimeout(() => { t.classList.replace('animate__fadeInRight', 'animate__fadeOutRight'); setTimeout(() => t.remove(), 500); }, 2000);
+            setTimeout(() => { 
+                t.classList.replace('animate__fadeInRight', 'animate__fadeOutRight'); 
+                setTimeout(() => t.remove(), 500); 
+            }, 2000);
         }
 
         obtenerDatos();
