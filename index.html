@@ -16,9 +16,27 @@
         }
         #modal-resumen { display: none; }
         #modal-resumen.active { display: flex; }
+        
+        /* Pantalla de Oferta del Día */
+        #splash-oferta {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px); z-index: 200;
+            display: none; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 pb-24">
+
+    <div id="splash-oferta">
+        <div class="text-center p-6 animate__animated animate__zoomIn">
+            <h2 class="text-amber-500 text-3xl font-black italic mb-2 tracking-tighter">¡OFERTA DEL DÍA!</h2>
+            <div class="bg-white p-2 rounded-3xl shadow-2xl inline-block relative overflow-hidden">
+                <img id="img-oferta-dia" src="" class="w-72 h-72 object-cover rounded-2xl border-4 border-amber-500">
+                <div id="nombre-oferta-dia" class="absolute bottom-4 left-0 right-0 bg-amber-600 text-white font-bold py-2 mx-4 rounded-xl shadow-lg"></div>
+            </div>
+            <p class="text-white mt-4 font-bold animate__animated animate__pulse animate__infinite">Preparando tu experiencia gourmet...</p>
+        </div>
+    </div>
 
     <div id="contenedor-notificaciones"></div>
 
@@ -102,8 +120,22 @@
                     };
                 }).filter(p => p.nombre && p.nombre.length > 1);
 
-                // LÓGICA DE PRIORIDAD: Ordenar para que las ofertas (1) aparezcan primero
+                // LÓGICA DE PRIORIDAD
                 productosBase.sort((a, b) => b.oferta - a.oferta);
+
+                // MOSTRAR SPLASH SI HAY OFERTA
+                const ofertaDestacada = productosBase.find(p => p.oferta === "1");
+                if (ofertaDestacada) {
+                    const splash = document.getElementById('splash-oferta');
+                    document.getElementById('img-oferta-dia').src = ofertaDestacada.imagen;
+                    document.getElementById('nombre-oferta-dia').innerText = ofertaDestacada.nombre;
+                    splash.style.display = 'flex';
+                    
+                    setTimeout(() => {
+                        splash.classList.add('animate__animated', 'animate__fadeOut');
+                        setTimeout(() => splash.style.display = 'none', 800);
+                    }, 3500); // 3.5 segundos para que se aprecie bien
+                }
 
                 dibujarProductos(productosBase);
             } catch (error) {
@@ -116,14 +148,9 @@
             contenedor.innerHTML = '';
             lista.forEach((p) => {
                 const esOferta = p.oferta === "1";
-                
-                // Si es oferta, badge rojo pulsante. Si no, nada.
                 const badgeOferta = esOferta ? 
                     `<div class="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg animate__animated animate__heartBeat animate__infinite z-20">OFERTA 🔥</div>` : '';
-                
                 const bordeOferta = esOferta ? 'border-amber-500 ring-4 ring-amber-500/20' : 'border-gray-100';
-                
-                // Animación especial para ofertas (entra un poco después y más llamativo)
                 const animacion = esOferta ? 'animate__backInDown' : 'animate__fadeInUp';
 
                 contenedor.innerHTML += `
