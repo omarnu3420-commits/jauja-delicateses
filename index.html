@@ -96,7 +96,8 @@
                         nombre: columnas[0]?.replace(/"/g, '').trim(),
                         categoria: columnas[1]?.replace(/"/g, '').trim(),
                         precio: columnas[2]?.replace(/"/g, '').trim(),
-                        imagen: columnas[3]?.replace(/"/g, '').trim()
+                        imagen: columnas[3]?.replace(/"/g, '').trim(),
+                        oferta: columnas[4]?.trim() // Lee la Columna E
                     };
                 }).filter(p => p.nombre && p.nombre.length > 1);
                 dibujarProductos(productosBase);
@@ -109,11 +110,17 @@
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
             lista.forEach(p => {
+                const esOferta = p.oferta === "1";
+                const badgeOferta = esOferta ? 
+                    `<div class="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg animate__animated animate__pulse animate__infinite">OFERTA 🔥</div>` : '';
+                const bordeOferta = esOferta ? 'border-amber-500 ring-2 ring-amber-500/30' : 'border-gray-100';
+
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated animate__fadeInUp">
+                    <div class="bg-white rounded-3xl shadow-sm border ${bordeOferta} overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated animate__fadeInUp relative">
                         <div class="h-64 relative overflow-hidden">
                             <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
                             <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800">${p.categoria}</span>
+                            ${badgeOferta}
                         </div>
                         <div class="p-6 flex flex-col flex-grow text-center">
                             <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center justify-center">${p.nombre}</h3>
@@ -204,7 +211,6 @@
                 total += item.valor;
             });
 
-            // FORMATO SOLICITADO: Cant - Nombre - Precio - Subtotal
             for (const [nombre, info] of Object.entries(resumen)) {
                 let subtotal = (info.cant * info.v).toFixed(2);
                 let precioUnit = info.v.toFixed(2);
