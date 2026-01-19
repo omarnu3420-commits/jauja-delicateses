@@ -55,6 +55,7 @@
             <button onclick="filtrar('Lacteos')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Lacteos</button>
             <button onclick="filtrar('Dulces')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Dulces</button>
             <button onclick="filtrar('Comidas')" class="btn-categoria px-6 py-2 rounded-full bg-gray-100 text-gray-700 font-bold text-xs uppercase hover:bg-amber-500 hover:text-white transition">Comidas</button>
+            <button onclick="salirApp()" class="btn-categoria px-6 py-2 rounded-full bg-red-600 text-white font-bold text-xs uppercase shadow-md hover:bg-red-700 transition">SALIR</button>
         </div>
     </nav>
 
@@ -143,10 +144,8 @@
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
             } else {
-                // Al vaciar, primero ponemos los valores a cero
                 cuenta.innerText = "0";
                 montoFlotante.innerText = "0.00$";
-                // Luego ocultamos el botón
                 btn.classList.add('translate-y-32', 'opacity-0');
                 btn.classList.remove('translate-y-0', 'opacity-100');
             }
@@ -182,6 +181,16 @@
                 carrito = []; 
                 actualizarInterfaz(); 
                 cerrarModal(); 
+            }
+        }
+
+        // NUEVA FUNCIÓN SALIR
+        function salirApp() {
+            if(confirm("¿Estás seguro que deseas salir? Se perderá el pedido actual.")) {
+                carrito = [];
+                actualizarInterfaz();
+                // Redirigir al inicio o refrescar la página
+                window.location.reload(); 
             }
         }
 
