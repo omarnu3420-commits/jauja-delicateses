@@ -140,14 +140,12 @@
                 const total = carrito.reduce((sum, item) => sum + item.valor, 0);
                 cuenta.innerText = carrito.length;
                 montoFlotante.innerText = total.toFixed(2) + "$";
-                
                 btn.classList.remove('translate-y-32', 'opacity-0');
                 btn.classList.add('translate-y-0', 'opacity-100');
             } else {
                 cuenta.innerText = "0";
                 montoFlotante.innerText = "0.00$";
                 btn.classList.add('translate-y-32', 'opacity-0');
-                btn.classList.remove('translate-y-0', 'opacity-100');
             }
         }
 
@@ -166,8 +164,9 @@
             for (const [nombre, info] of Object.entries(resumen)) {
                 lista.innerHTML += `
                     <div class="flex justify-between items-center border-b pb-2">
-                        <span><b class="text-amber-600">${info.cant}</b> ${nombre}</span>
-                        <span class="font-mono text-gray-500">$${(info.cant * info.v).toFixed(2)}</span>
+                        <span class="flex-grow"><b>${info.cant}</b> x ${nombre}</span>
+                        <span class="font-mono text-gray-400 mr-4 text-xs">$${info.v.toFixed(2)}</span>
+                        <span class="font-bold text-amber-600">$${(info.cant * info.v).toFixed(2)}</span>
                     </div>`;
             }
             document.getElementById('total-modal').innerText = total.toFixed(2) + "$";
@@ -177,20 +176,13 @@
         function cerrarModal() { document.getElementById('modal-resumen').classList.remove('active'); }
 
         function vaciarCarrito() {
-            if(confirm("¿Deseas anular el pedido y vaciar el carrito?")) { 
-                carrito = []; 
-                actualizarInterfaz(); 
-                cerrarModal(); 
-            }
+            if(confirm("¿Vaciar carrito?")) { carrito = []; actualizarInterfaz(); cerrarModal(); }
         }
 
-        // NUEVA FUNCIÓN SALIR
         function salirApp() {
-            if(confirm("¿Estás seguro que deseas salir? Se perderá el pedido actual.")) {
+            if(confirm("¿Deseas salir? Se perderá el pedido.")) {
                 carrito = [];
-                actualizarInterfaz();
-                // Redirigir al inicio o refrescar la página
-                window.location.reload(); 
+                window.location.reload();
             }
         }
 
@@ -201,7 +193,7 @@
             const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
             let msg = `*PEDIDO @JAUJA DELICATESES*\n`;
-            msg += `📅 Fecha: ${fecha} | ⏰ Hora: ${hora}\n`;
+            msg += `📅 ${fecha} | ⏰ ${hora}\n`;
             msg += `──────────────────\n\n`;
 
             const resumen = {};
@@ -212,11 +204,17 @@
                 total += item.valor;
             });
 
+            // FORMATO SOLICITADO: Cant - Nombre - Precio - Subtotal
             for (const [nombre, info] of Object.entries(resumen)) {
-                msg += `${info.cant} x ${nombre} ($${info.v.toFixed(2)}) = $${(info.cant * info.v).toFixed(2)}\n`;
+                let subtotal = (info.cant * info.v).toFixed(2);
+                let precioUnit = info.v.toFixed(2);
+                msg += `${info.cant} ${nombre.padEnd(15)} ${precioUnit.padStart(8)} ${subtotal.padStart(10)}\n`;
             }
 
-            msg += `\n*Total a pagar: ${total.toFixed(2)}$*\n\n¿Cómo procedo con el pago?`;
+            msg += `\n──────────────────\n`;
+            msg += `*TOTAL A PAGAR: ${total.toFixed(2)}$*\n\n`;
+            msg += `¿Cómo procedo con el pago?`;
+
             window.open(`https://wa.me/${MI_WHATSAPP}?text=${encodeURIComponent(msg)}`, '_blank');
         }
 
