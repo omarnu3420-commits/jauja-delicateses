@@ -90,6 +90,7 @@
                 const respuesta = await fetch(URL_CSV);
                 const texto = await respuesta.text();
                 const filas = texto.split('\n').slice(1);
+                
                 productosBase = filas.map(fila => {
                     const columnas = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     return {
@@ -97,9 +98,13 @@
                         categoria: columnas[1]?.replace(/"/g, '').trim(),
                         precio: columnas[2]?.replace(/"/g, '').trim(),
                         imagen: columnas[3]?.replace(/"/g, '').trim(),
-                        oferta: columnas[4]?.trim() // Lee la Columna E
+                        oferta: columnas[4]?.trim() || "0" 
                     };
                 }).filter(p => p.nombre && p.nombre.length > 1);
+
+                // LÓGICA DE PRIORIDAD: Ordenar para que las ofertas (1) aparezcan primero
+                productosBase.sort((a, b) => b.oferta - a.oferta);
+
                 dibujarProductos(productosBase);
             } catch (error) {
                 document.getElementById('contenedor-productos').innerHTML = "<p class='text-center col-span-full'>Error cargando productos.</p>";
@@ -109,20 +114,26 @@
         function dibujarProductos(lista) {
             const contenedor = document.getElementById('contenedor-productos');
             contenedor.innerHTML = '';
-            lista.forEach(p => {
+            lista.forEach((p) => {
                 const esOferta = p.oferta === "1";
+                
+                // Si es oferta, badge rojo pulsante. Si no, nada.
                 const badgeOferta = esOferta ? 
-                    `<div class="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg animate__animated animate__pulse animate__infinite">OFERTA 🔥</div>` : '';
-                const bordeOferta = esOferta ? 'border-amber-500 ring-2 ring-amber-500/30' : 'border-gray-100';
+                    `<div class="absolute top-4 right-4 bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg animate__animated animate__heartBeat animate__infinite z-20">OFERTA 🔥</div>` : '';
+                
+                const bordeOferta = esOferta ? 'border-amber-500 ring-4 ring-amber-500/20' : 'border-gray-100';
+                
+                // Animación especial para ofertas (entra un poco después y más llamativo)
+                const animacion = esOferta ? 'animate__backInDown' : 'animate__fadeInUp';
 
                 contenedor.innerHTML += `
-                    <div class="bg-white rounded-3xl shadow-sm border ${bordeOferta} overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated animate__fadeInUp relative">
+                    <div class="bg-white rounded-3xl shadow-sm border ${bordeOferta} overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-500 animate__animated ${animacion} relative">
                         <div class="h-64 relative overflow-hidden">
                             <img src="${p.imagen}" alt="${p.nombre}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400?text=@Jauja+Foto'">
-                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800">${p.categoria}</span>
+                            <span class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1 rounded-full text-[10px] font-black uppercase text-amber-800 z-20">${p.categoria}</span>
                             ${badgeOferta}
                         </div>
-                        <div class="p-6 flex flex-col flex-grow text-center">
+                        <div class="p-6 flex flex-col flex-grow text-center ${esOferta ? 'bg-amber-50/30' : ''}">
                             <h3 class="text-xl font-bold text-gray-800 leading-tight min-h-[3.5rem] flex items-center justify-center">${p.nombre}</h3>
                             <span class="text-2xl font-black text-amber-600 mt-2">${p.precio}</span>
                             <button onclick="agregarAlCarrito('${p.nombre}', '${p.precio}')" class="mt-6 w-full bg-gray-900 text-white py-4 rounded-2xl font-bold hover:bg-amber-600 transition-all shadow-lg">+ AGREGAR</button>
